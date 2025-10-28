@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
-int LED_PIN = 13;
-int delayTime = 500;
+int LED_PIN = PC13;
+int delayTime = 1000;
 
 void setup() {
    pinMode(LED_PIN, OUTPUT);
