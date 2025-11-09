@@ -1,0 +1,43 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Users\Admin\Documents\Programming\Learning-Arduino\8051Intro\intro8051.uvproj
+Project File Date:  11/07/2025
+
+<h2>Output:</h2>
+Build target 'Target 1'
+assembling main.a51...
+linking...
+Program Size: data=8.0 xdata=0 code=2
+creating hex file from "intro8051"...
+"intro8051" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling main.c...
+main.c(1): warning C315: unknown #directive 'INCLUDE'
+main.c(11): error C141: syntax error near ')'
+main.c(12): error C202: 'P2': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling main.c...
+main.c(1): warning C315: unknown #directive 'INCLUDE'
+main.c(12): error C202: 'P2': undefined identifier
+Target not created
+Rebuild target 'Target 1'
+compiling main.c...
+linking...
+Program Size: data=9.0 xdata=0 code=59
+creating hex file from "intro8051"...
+"intro8051" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+assembling main.a51...
+linking...
+Program Size: data=8.0 xdata=0 code=3
+creating hex file from "intro8051"...
+"intro8051" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+linking...
+Program Size: data=8.0 xdata=0 code=3
+creating hex file from "intro8051"...
+"intro8051" - 0 Error(s), 0 Warning(s).

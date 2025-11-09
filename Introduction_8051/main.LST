@@ -1,0 +1,30 @@
+A51 MACRO ASSEMBLER  MAIN                                                                 11/07/2025 19:13:19 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.02b
+OBJECT MODULE PLACED IN main.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\C51\BIN\A51.EXE main.a51 SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+                       1     ; Set P2 to 10101010 on 8051
+0000                   2     ORG 0x00        ; Origin, start of program memory
+                       3     
+0000 75A0AA            4     MOV P2, #0AAh   ; Move immediate value 0xAA (10101010) to Port 2
+                       5     
+                       6     END             ; End of program
+A51 MACRO ASSEMBLER  MAIN                                                                 11/07/2025 19:13:19 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+P2 . . . . . . . .  D ADDR   00A0H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

@@ -13,13 +13,38 @@ const float ADC_MAX = 1023.0f;  // 10-bit ADC
 const float TEMP_MIN = 0.0f;
 const float TEMP_MAX = 180.0f;
 
+// --- Kalman filter variables ---
+float x_est = 0.0f;     // estimated value
+float P = 1.0f;         // estimation error covariance
+const float Q = 0.01f;  // process noise (tune this)
+const float R = 1.0f;   // measurement noise (tune this)
+
+// Convert voltage to temperature
 float voltageToTemp(float voltage) {
-   // linear mapping from [0..VREF] -> [TEMP_MIN..TEMP_MAX]
    float t = (voltage / VREF) * (TEMP_MAX - TEMP_MIN) + TEMP_MIN;
-   // clamp
    if (t < TEMP_MIN) t = TEMP_MIN;
    if (t > TEMP_MAX) t = TEMP_MAX;
    return t;
+}
+
+// Kalman filter update
+float kalmanUpdate(float measurement) {
+   P = P + Q;
+   float K = P / (P + R);
+   x_est = x_est + K * (measurement - x_est);
+   P = (1 - K) * P;
+   return x_est;
+}
+
+// Compute mean and standard deviation
+void computeStats(float arr[], int n, float& mean, float& stddev) {
+   float sum = 0;
+   for (int i = 0; i < n; i++) sum += arr[i];
+   mean = sum / n;
+
+   float var = 0;
+   for (int i = 0; i < n; i++) var += (arr[i] - mean) * (arr[i] - mean);
+   stddev = sqrt(var / n);
 }
 
 void setup() {
@@ -34,33 +59,48 @@ void setup() {
 }
 
 void loop() {
-   // Read raw ADC value
+   const int N = 50;
+   float temps[N];
+
+   // Collect 50 samples
+   for (int i = 0; i < N; i++) {
+      int raw = analogRead(analogPin);
+      float voltage = (raw * VREF) / ADC_MAX;
+      temps[i] = voltageToTemp(voltage);
+      delay(1000 / N);
+   }
+
+   // Compute stats
+   float mean, stddev;
+   computeStats(temps, N, mean, stddev);
+
+   // Reject outliers (keep only within ±2σ)
+   for (int i = 0; i < N; i++) {
+      if (fabs(temps[i] - mean) <= 2 * stddev) {
+         kalmanUpdate(temps[i]);
+      }
+   }
+
+   // After filtering, use Kalman estimate
+   float filteredTemp = x_est;
+
+   // For display, take one fresh raw sample
    int raw = analogRead(analogPin);
-
-   // Convert to voltage (float)
    float voltage = (raw * VREF) / ADC_MAX;
-
-   // Convert voltage to temperature (0 - 150)
-   float temperature = voltageToTemp(voltage);
-
-   // Compute percentage of VREF (rounded)
    int percent = (int)round((voltage / VREF) * 100.0f);
 
-   // Display — first line: temperature
+   // Display filtered temperature
    lcd.setCursor(0, 0);
    lcd.print("Temp: ");
-   lcd.print(temperature, 1);  // one decimal place
-   lcd.print(" C   ");         // trailing spaces to clear old chars
+   lcd.print(filteredTemp, 1);
+   lcd.print(" C   ");
 
-   // second line: raw ADC and percent
+   // Display raw ADC and percent
    lcd.setCursor(0, 1);
    lcd.print("Raw:");
    lcd.print(raw);
-   // clear some space (so previous longer numbers don't remain)
    lcd.print("    ");
    lcd.setCursor(10, 1);
    lcd.print(percent);
    lcd.print("%   ");
-
-   delay(500);  // update twice per second
 }

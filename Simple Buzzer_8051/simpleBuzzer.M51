@@ -1,0 +1,54 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        11/08/2025  08:59:46  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE main.obj TO simpleBuzzer RAMSIZE (256)
+
+
+INPUT MODULES INCLUDED:
+  main.obj (MAIN)
+
+
+LINK MAP OF MODULE:  simpleBuzzer (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0013H     ABSOLUTE     
+
+
+
+SYMBOL TABLE OF MODULE:  simpleBuzzer (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:000CH         SYMBOL        D1
+  C:000EH         SYMBOL        D2
+  C:000AH         SYMBOL        DELAY
+  D:00A0H         SYMBOL        P2
+  C:0000H         SYMBOL        START
+  C:0000H         LINE#         8
+  C:0002H         LINE#         9
+  C:0004H         LINE#         10
+  C:0006H         LINE#         11
+  C:0008H         LINE#         12
+  C:000AH         LINE#         17
+  C:000CH         LINE#         18
+  C:000EH         LINE#         19
+  C:0010H         LINE#         20
+  C:0012H         LINE#         21
+  -------         ENDMOD        MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0013H BYTE ( 0%) *
+******************************************************************************
+
+Program Size: data=8.0 xdata=0 code=19
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
