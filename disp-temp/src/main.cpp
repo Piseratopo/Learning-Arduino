@@ -4,14 +4,14 @@
 // LCD (4-bit mode): LiquidCrystal(rs, enable, d4, d5, d6, d7)
 LiquidCrystal lcd(PB0, PB1, PA4, PA5, PA6, PA7);
 
-const uint8_t analogPin = A0;
+const uint8_t analogPin = A1;
 
 const float VREF = 3.3f;
 const float ADC_MAX = 1023.0f;  // 10-bit ADC
 
 // Temperature mapping range
 const float TEMP_MIN = 0.0f;
-const float TEMP_MAX = 180.0f;
+const float TEMP_MAX = 100.0f;
 
 // --- Kalman filter variables ---
 float x_est = 0.0f;     // estimated value
@@ -84,23 +84,10 @@ void loop() {
    // After filtering, use Kalman estimate
    float filteredTemp = x_est;
 
-   // For display, take one fresh raw sample
-   int raw = analogRead(analogPin);
-   float voltage = (raw * VREF) / ADC_MAX;
-   int percent = (int)round((voltage / VREF) * 100.0f);
-
    // Display filtered temperature
    lcd.setCursor(0, 0);
-   lcd.print("Temp: ");
+   lcd.print("Temperature: ");
+   lcd.setCursor(0, 1);
    lcd.print(filteredTemp, 1);
    lcd.print(" C   ");
-
-   // Display raw ADC and percent
-   lcd.setCursor(0, 1);
-   lcd.print("Raw:");
-   lcd.print(raw);
-   lcd.print("    ");
-   lcd.setCursor(10, 1);
-   lcd.print(percent);
-   lcd.print("%   ");
 }
