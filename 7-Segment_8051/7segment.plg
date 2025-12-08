@@ -1,0 +1,32 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Users\Admin\Documents\Programming\LearningArduino\7-Segment_8051\7segment.uvproj
+Project File Date:  12/03/2025
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling main.c...
+main.c(58): error C141: syntax error near '['
+assembling main.a51...
+main.a51(51): error A48: DATA-ADDRESS EXPECTED
+main.a51(52): error A48: DATA-ADDRESS EXPECTED
+main.a51(53): error A48: DATA-ADDRESS EXPECTED
+main.a51(54): error A48: DATA-ADDRESS EXPECTED
+main.a51(55): error A48: DATA-ADDRESS EXPECTED
+main.a51(62): error A48: DATA-ADDRESS EXPECTED
+main.a51(63): error A48: DATA-ADDRESS EXPECTED
+main.a51(65): error A48: DATA-ADDRESS EXPECTED
+main.a51(68): error A48: DATA-ADDRESS EXPECTED
+main.a51(69): error A48: DATA-ADDRESS EXPECTED
+main.a51(71): error A48: DATA-ADDRESS EXPECTED
+main.a51(75): error A48: DATA-ADDRESS EXPECTED
+main.a51(82): error A48: DATA-ADDRESS EXPECTED
+main.a51(147): error A48: DATA-ADDRESS EXPECTED
+main.a51(149): error A48: DATA-ADDRESS EXPECTED
+main.a51(151): error A48: DATA-ADDRESS EXPECTED
+main.a51(153): error A48: DATA-ADDRESS EXPECTED
+main.a51(155): error A48: DATA-ADDRESS EXPECTED
+Target not created

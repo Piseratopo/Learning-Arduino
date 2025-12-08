@@ -1,4 +1,4 @@
-BL51 BANKED LINKER/LOCATER V6.22                                                        11/07/2025  19:14:27  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22                                                        12/03/2025  18:53:44  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
@@ -19,7 +19,7 @@ LINK MAP OF MODULE:  intro8051 (MAIN)
             REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
 
             * * * * * * *   C O D E   M E M O R Y   * * * * * * *
-            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0000H     0005H     ABSOLUTE     
 
 
 
@@ -29,13 +29,15 @@ SYMBOL TABLE OF MODULE:  intro8051 (MAIN)
   ----------------------------------
 
   -------         MODULE        MAIN
+  C:0003H         SYMBOL        END_C
   D:00A0H         SYMBOL        P2
-  C:0000H         LINE#         4
+  C:0000H         LINE#         1
+  C:0003H         LINE#         4
   -------         ENDMOD        MAIN
 
 ******************************************************************************
-* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0003H BYTE ( 0%) *
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0005H BYTE ( 0%) *
 ******************************************************************************
 
-Program Size: data=8.0 xdata=0 code=3
+Program Size: data=8.0 xdata=0 code=5
 LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

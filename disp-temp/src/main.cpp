@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
+#include <math.h>
 
 LiquidCrystal lcd(PB0, PB1, PA4, PA5, PA6, PA7);
 
@@ -17,13 +18,16 @@ const double Q = 0.01;
 const double R = 1.0;
 
 // ✅ Parameter to enable/disable Kalman
-bool useKalman = true;   // set to false to disable Kalman filtering
+bool useKalman = false;  // set to false to disable Kalman filtering
 
 double voltageToTemp(double voltage) {
-   double A = -11.1634f;
-   double B = 39.5307f;
-   double C = 1.6443f;
-   double t = A + B * voltage + C / (voltage * voltage);
+   double A = -0.8283210862f;
+   double B = 31.43951163f;
+   double C = 2.619168361f;
+   double D = -0.4857799432f;
+   double E = -126.5444745f;
+   double F = -281.8654792f;
+   double t = A + B * voltage + C * voltage * voltage + D * log(voltage);
    if (t < TEMP_MIN) t = TEMP_MIN;
    if (t > TEMP_MAX) t = TEMP_MAX;
    return t;
@@ -80,8 +84,8 @@ void loop() {
    lcd.print("Temp: ");
    lcd.print(filteredTemp, 1);
    lcd.print(" C   ");
-   lcd.setCursor(0, 1);
-   lcd.print("Volt: ");
-   lcd.print(filteredVoltage, 5);
-   lcd.print(" V   ");
+   // lcd.setCursor(0, 1);
+   // lcd.print("Volt: ");
+   // lcd.print(filteredVoltage, 5);
+   // lcd.print(" V   ");
 }
