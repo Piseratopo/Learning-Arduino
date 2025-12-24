@@ -1,0 +1,40 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "D:/Programming/Learning-Arduino/Intro_intel_mcs51/include",
+                "D:/Programming/Learning-Arduino/Intro_intel_mcs51/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "D:/Programming/Learning-Arduino/Intro_intel_mcs51/include",
+                    "D:/Programming/Learning-Arduino/Intro_intel_mcs51/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "F_CPU=11059200L",
+                "HEAP_SIZE=64",
+                "PLATFORMIO=60118",
+                "AT89S52",
+                "NAKED_ARCH_MCS51",
+                "NAKED_MCS51_AT89S52",
+                ""
+            ],
+            "compilerPath": "C:/Users/buinh/.platformio/packages/toolchain-sdcc/bin/sdcc.exe",
+            "compilerArgs": [
+                "-mmcs51",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}

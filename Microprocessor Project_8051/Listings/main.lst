@@ -1,0 +1,426 @@
+A51 MACRO ASSEMBLER  MAIN                                                                 12/24/2025 22:28:14 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.2.7.0
+OBJECT MODULE PLACED IN .\Objects\main.obj
+ASSEMBLER INVOKED BY: C:\Keil_v5\C51\BIN\A51.EXE main.a51 SET(SMALL) DEBUG PRINT(.\Listings\main.lst) OBJECT(.\Objects\m
+                      ain.obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+                       1     ;----------------------------------------------------------
+                       2     ; CIRCUIT: STC89C52 + DHT11 + LCD I2C (ADDRESS 04EH)
+                       3     ; FREQUENCY: 12 MHZ (1 Machine Cycle = 1 microsecond)
+                       4     ; VERSION: SAFE MODE (Robust timing for reliability)
+                       5     ;----------------------------------------------------------
+                       6     
+                       7     ; --- Pin Definitions ---
+  00A1                 8     SDA     BIT P2.1            ; I2C Data Line
+  00A2                 9     SCL     BIT P2.2            ; I2C Clock Line
+  00A0                10     DHT_IO  BIT P2.0            ; DHT11 Single-Bus Data Line
+                      11     
+                      12     ; --- I2C Address ---
+  004E                13     LCD_ADDR EQU 04EH           ; I2C Address for the LCD Backpack
+                      14     
+                      15     ; --- RAM Memory Allocation ---
+  0030                16     HUM_INT  EQU 30H            ; Stores Humidity Integer part
+  0031                17     TMP_INT  EQU 31H            ; Stores Temperature Integer part
+  0032                18     BL_STATE EQU 32H            ; Stores Backlight state (08H = ON, 00H = OFF)
+                      19     
+0000                  20             ORG 0000H           ; Reset Vector
+0000 020030           21             LJMP MAIN
+                      22     
+0030                  23             ORG 0030H           ; Main Program Start
+0030                  24     MAIN:
+0030 758160           25             MOV SP, #60H        ; Initialize Stack Pointer
+0033 753208           26             MOV BL_STATE, #08H  ; Set Backlight to ON by default
+                      27             
+0036 12010B           28             LCALL DELAY_100MS   ; Wait for power to stabilize
+0039 12011C           29             LCALL I2C_INIT      ; Initialize I2C lines
+003C 120179           30             LCALL LCD_INIT      ; Initialize LCD in 4-bit mode via I2C
+                      31             
+                      32             ; --- Display Static Labels ---
+003F 1201A8           33             LCALL LCD_LINE1     ; Move cursor to Line 1
+0042 9001D5           34             MOV DPTR, #TXT_TEMP ; Load "Temp: " string
+0045 1201BC           35             LCALL LCD_STR
+                      36             
+0048 1201B2           37             LCALL LCD_LINE3     ; Move cursor to Line 2
+004B 9001E3           38             MOV DPTR, #TXT_HUMI ; Load "Humi: " string
+004E 1201BC           39             LCALL LCD_STR
+                      40     
+0051                  41     LOOP:
+                      42             ; Reset stored values before reading
+0051 753000           43             MOV HUM_INT, #0
+0054 753100           44             MOV TMP_INT, #0
+                      45     
+0057 1200B1           46             LCALL READ_DHT_SAFE ; Call DHT11 reading routine
+005A 402B             47             JC SENSOR_ERR       ; If Carry Flag (C) is set, a timeout occurred
+                      48     
+                      49             ; --- Display Data (If Read Success) ---
+                      50             ; 1. Display Temperature
+005C 1201AD           51             LCALL LCD_LINE2
+005F 7420             52                     MOV A, #' '                     ; Padding 1 space
+0061 120174           53                     LCALL LCD_DATA_BYTE
+0064 E531             54             MOV A, TMP_INT      ; Load temperature value
+0066 1201C6           55             LCALL SHOW_NUM      ; Convert and display as ASCII
+0069 74DF             56             MOV A, #0DFH        ; ASCII code for the Degree symbol (°)
+006B 120174           57             LCALL LCD_DATA_BYTE
+A51 MACRO ASSEMBLER  MAIN                                                                 12/24/2025 22:28:14 PAGE     2
+
+006E 7443             58             MOV A, #'C'         ; Celsius unit
+0070 120174           59             LCALL LCD_DATA_BYTE
+                      60             
+                      61             ; 2. Display Humidity
+0073 1201B7           62             LCALL LCD_LINE4
+0076 7420             63                     MOV A, #' '
+0078 120174           64                     LCALL LCD_DATA_BYTE
+007B E530             65             MOV A, HUM_INT      ; Load humidity value
+007D 1201C6           66             LCALL SHOW_NUM
+0080 7425             67             MOV A, #'%'         ; Percentage unit
+0082 120174           68             LCALL LCD_DATA_BYTE
+0085 8024             69             SJMP WAIT_NEXT
+                      70     
+0087                  71     SENSOR_ERR:
+                      72             ; Display "ER" on the value lines if sensor fails
+0087 1201AD           73             LCALL LCD_LINE2
+008A 7420             74             MOV A, #' '
+008C 120174           75             LCALL LCD_DATA_BYTE
+008F 7445             76             MOV A, #'E'
+0091 120174           77             LCALL LCD_DATA_BYTE
+0094 7452             78             MOV A, #'R'
+0096 120174           79             LCALL LCD_DATA_BYTE
+                      80     
+0099 1201B7           81             LCALL LCD_LINE4
+009C 7420             82             MOV A, #' '
+009E 120174           83             LCALL LCD_DATA_BYTE
+00A1 7445             84             MOV A, #'E'
+00A3 120174           85             LCALL LCD_DATA_BYTE
+00A6 7452             86             MOV A, #'R'
+00A8 120174           87             LCALL LCD_DATA_BYTE
+                      88     
+00AB                  89     WAIT_NEXT:
+00AB 120103           90             LCALL DELAY_2S      ; Wait 2 seconds (DHT11 needs time between reads)
+00AE 020051           91             LJMP LOOP           ; Repeat
+                      92     
+                      93     ;==========================================================
+                      94     ; DHT11 SENSOR INTERFACE (SAFE MODE)
+                      95     ;==========================================================
+00B1                  96     READ_DHT_SAFE:
+                      97             ; 1. Send Start Signal
+00B1 C2A0             98             CLR DHT_IO          ; Pull bus LOW
+00B3 1200FA           99             LCALL DELAY_25MS    ; Stay LOW for >18ms (DHT11 requirement)
+00B6 D2A0            100             SETB DHT_IO         ; Pull bus HIGH
+                     101             
+                     102             ; 2. Wait for DHT11 Response (Handshake)
+                     103             ; Wait for DHT to pull the bus LOW
+00B8 7FFA            104             MOV R7, #250        
+00BA 30A004          105     W_L:    JNB DHT_IO, W_OK    ; If pin is LOW, DHT responded
+00BD DFFB            106             DJNZ R7, W_L
+00BF D3              107             SETB C              ; Error: Timeout 1
+00C0 22              108             RET
+00C1                 109     W_OK:   
+                     110             ; Wait for DHT to pull the bus HIGH
+00C1 7FFA            111             MOV R7, #250
+00C3 20A004          112     W_H:    JB DHT_IO, PREP     ; If pin is HIGH, DHT is ready to send data
+00C6 DFFB            113             DJNZ R7, W_H
+00C8 D3              114             SETB C              ; Error: Timeout 2
+00C9 22              115             RET
+00CA                 116     PREP:   
+                     117             ; Wait for the first falling edge (start of first bit)
+00CA 7FFA            118             MOV R7, #250
+00CC 30A004          119     W_B:    JNB DHT_IO, START_R 
+00CF DFFB            120             DJNZ R7, W_B
+00D1 D3              121             SETB C
+00D2 22              122             RET
+                     123     
+A51 MACRO ASSEMBLER  MAIN                                                                 12/24/2025 22:28:14 PAGE     3
+
+00D3                 124     START_R:
+                     125             ; 3. Read 5 Bytes (40 bits total)
+00D3 1200E8          126             LCALL RD_BYTE
+00D6 F530            127             MOV HUM_INT, A      ; Byte 1: Humidity Integer
+00D8 1200E8          128             LCALL RD_BYTE       ; Byte 2: Humidity Decimal (Ignored for DHT11)
+00DB 1200E8          129             LCALL RD_BYTE
+00DE F531            130             MOV TMP_INT, A      ; Byte 3: Temperature Integer
+00E0 1200E8          131             LCALL RD_BYTE       ; Byte 4: Temperature Decimal (Ignored for DHT11)
+00E3 1200E8          132             LCALL RD_BYTE       ; Byte 5: Checksum (Skipped here for simplicity)
+                     133             
+00E6 C3              134             CLR C               ; Success: Clear Carry Flag
+00E7 22              135             RET
+                     136     
+00E8                 137     RD_BYTE:
+00E8 7D08            138             MOV R5, #8          ; Counter for 8 bits
+00EA                 139     B_LP:   
+00EA 30A0FD          140             JNB DHT_IO, $       ; Wait for pin to go HIGH (Start of bit)
+                     141             
+                     142             ; --- BIT SAMPLING MOMENT ---
+                     143             ; Logic 0: High for 26-28us
+                     144             ; Logic 1: High for 70us
+                     145             ; We wait ~45us. If pin is still HIGH, it's a '1'. If LOW, it's a '0'.
+                     146             ; At 12MHz, 1 machine cycle = 1us. DJNZ takes 2us.
+00ED 7F14            147             MOV R7, #20         ; 20 * 2us = 40us + overhead
+00EF DFFE            148             DJNZ R7, $
+                     149             
+00F1 A2A0            150             MOV C, DHT_IO       ; Sample the state of the pin
+00F3 33              151             RLC A               ; Shift Carry into Accumulator A
+                     152             
+00F4 20A0FD          153             JB DHT_IO, $        ; If still HIGH, wait for it to go LOW before next bit
+00F7 DDF1            154             DJNZ R5, B_LP       ; Repeat for 8 bits
+00F9 22              155             RET
+                     156     
+                     157     ;==========================================================
+                     158     ; DELAY ROUTINES (CALIBRATED FOR 12MHZ)
+                     159     ;==========================================================
+                     160     ; Delay ~25ms
+00FA                 161     DELAY_25MS:
+00FA 7E32            162             MOV R6, #50
+00FC 7FFA            163     D25_1:  MOV R7, #250        ; 250 * 2us = 500us
+00FE DFFE            164     D25_2:  DJNZ R7, D25_2      
+0100 DEFA            165             DJNZ R6, D25_1
+0102 22              166             RET
+                     167     
+                     168     ; Delay ~2s
+0103                 169     DELAY_2S:
+0103 7B50            170             MOV R3, #80         ; 80 * 25ms = 2000ms = 2s
+0105 1200FA          171     D2S_LP: LCALL DELAY_25MS
+0108 DBFB            172             DJNZ R3, D2S_LP
+010A 22              173             RET
+                     174     
+                     175     ; Delay ~100ms
+010B                 176     DELAY_100MS:
+010B 7B04            177             MOV R3, #4
+010D 1200FA          178     D100_LP: LCALL DELAY_25MS
+0110 DBFB            179             DJNZ R3, D100_LP
+0112 22              180             RET
+                     181     
+                     182     ; Delay ~5ms
+0113                 183     DELAY_5MS:  
+0113 7E0A            184             MOV R6, #10
+0115 7FFA            185     D5_1:   MOV R7, #250
+0117 DFFE            186     D5_2:   DJNZ R7, D5_2
+0119 DEFA            187             DJNZ R6, D5_1
+011B 22              188             RET
+                     189     
+A51 MACRO ASSEMBLER  MAIN                                                                 12/24/2025 22:28:14 PAGE     4
+
+                     190     ;==========================================================
+                     191     ; I2C & LCD DRIVERS (Bit-Banging)
+                     192     ;==========================================================
+011C                 193     I2C_INIT: 
+011C D2A1            194               SETB SDA
+011E D2A2            195               SETB SCL
+0120 22              196               RET
+                     197     
+0121                 198     I2C_START: 
+0121 D2A1            199                SETB SDA
+0123 D2A2            200                SETB SCL
+0125 00              201                NOP
+0126 C2A1            202                CLR SDA
+0128 00              203                NOP
+0129 C2A2            204                CLR SCL
+012B 22              205                RET
+                     206     
+012C                 207     I2C_STOP: 
+012C C2A1            208               CLR SDA
+012E D2A2            209               SETB SCL
+0130 00              210               NOP
+0131 D2A1            211               SETB SDA
+0133 22              212               RET
+                     213     
+0134                 214     I2C_WRITE: 
+0134 7F08            215             MOV R7, #8          ; Send 8 bits
+0136 33              216     W_BIT:  RLC A               ; MSB First
+0137 92A1            217             MOV SDA, C
+0139 D2A2            218             SETB SCL
+013B 00              219             NOP
+013C C2A2            220             CLR SCL
+013E DFF6            221             DJNZ R7, W_BIT
+0140 D2A1            222             SETB SDA            ; Receive ACK (ignored)
+0142 D2A2            223             SETB SCL
+0144 00              224             NOP
+0145 C2A2            225             CLR SCL
+0147 22              226             RET
+                     227     
+                     228     ; Sends content of R6 to I2C LCD Backpack
+0148                 229     SEND_PACKET: 
+0148 3121            230                  ACALL I2C_START
+014A 744E            231                  MOV A, #LCD_ADDR
+014C 3134            232                  ACALL I2C_WRITE
+014E EE              233                  MOV A, R6
+014F 3134            234                  ACALL I2C_WRITE
+0151 312C            235                  ACALL I2C_STOP
+0153 22              236                  RET
+                     237     
+                     238     ; Sends a 4-bit nibble to the LCD via PCF8574
+                     239     ; Logic: [D7 D6 D5 D4] [Backlight E RW RS]
+0154                 240     SEND_NIBBLE: 
+0154 FA              241                  MOV R2, A           ; Save original A
+0155 54F0            242                  ANL A, #0F0H        ; Keep only upper 4 bits
+0157 FB              243                  MOV R3, A           ; Store nibble in R3
+0158 E532            244                  MOV A, BL_STATE     ; Add Backlight bit
+015A 4D              245                  ORL A, R5           ; Add RS bit (R5=1 for data, 0 for cmd)
+015B 4404            246                  ORL A, #04H         ; Set EN (Enable) pin HIGH
+015D 4B              247                  ORL A, R3           ; Combine with data nibble
+015E FE              248                  MOV R6, A
+015F 3148            249                  ACALL SEND_PACKET   ; Send Nibble with EN=1
+                     250                  
+0161 EE              251                  MOV A, R6
+0162 54FB            252                  ANL A, #0FBH        ; Set EN pin LOW (falling edge triggers LCD)
+0164 FE              253                  MOV R6, A
+0165 3148            254                  ACALL SEND_PACKET
+0167 EA              255                  MOV A, R2           ; Restore A
+A51 MACRO ASSEMBLER  MAIN                                                                 12/24/2025 22:28:14 PAGE     5
+
+0168 22              256                  RET
+                     257     
+0169                 258     LCD_SEND_BYTE: 
+0169 3154            259                    ACALL SEND_NIBBLE  ; Send high nibble
+016B C4              260                    SWAP A             ; Swap nibbles
+016C 3154            261                    ACALL SEND_NIBBLE  ; Send low nibble
+016E 22              262                    RET
+                     263     
+016F                 264     LCD_CMD: 
+016F 7D00            265              MOV R5, #00H        ; RS = 0 for Command
+0171 3169            266              ACALL LCD_SEND_BYTE
+0173 22              267              RET
+                     268     
+0174                 269     LCD_DATA_BYTE: 
+0174 7D01            270                    MOV R5, #01H  ; RS = 1 for Data
+0176 3169            271                    ACALL LCD_SEND_BYTE
+0178 22              272                    RET
+                     273     
+0179                 274     LCD_INIT: 
+0179 1200FA          275               LCALL DELAY_25MS
+017C 7430            276               MOV A, #30H         ; 4-bit initialization sequence
+017E 7D00            277               MOV R5, #0
+0180 3154            278               ACALL SEND_NIBBLE
+0182 120113          279               LCALL DELAY_5MS
+0185 7430            280               MOV A, #30H
+0187 3154            281               ACALL SEND_NIBBLE
+0189 120113          282               LCALL DELAY_5MS
+018C 7430            283               MOV A, #30H
+018E 3154            284               ACALL SEND_NIBBLE
+0190 7420            285               MOV A, #20H         ; Set to 4-bit mode
+0192 3154            286               ACALL SEND_NIBBLE
+                     287               
+0194 7428            288               MOV A, #28H         ; Function Set: 2 lines, 5x8 font
+0196 316F            289               ACALL LCD_CMD
+0198 740C            290               MOV A, #0CH         ; Display ON, Cursor OFF
+019A 316F            291               ACALL LCD_CMD
+019C 7406            292               MOV A, #06H         ; Entry Mode: Increment cursor
+019E 316F            293               ACALL LCD_CMD
+01A0 7401            294               MOV A, #01H         ; Clear Display
+01A2 316F            295               ACALL LCD_CMD
+01A4 1200FA          296               LCALL DELAY_25MS
+01A7 22              297               RET
+                     298     
+01A8 7480            299     LCD_LINE1: MOV A, #80H        ; Force cursor to beginning of 1st line
+01AA 316F            300                ACALL LCD_CMD
+01AC 22              301                RET
+01AD 74C0            302     LCD_LINE2: MOV A, #0C0H       ; Force cursor to beginning of 2nd line
+01AF 316F            303                ACALL LCD_CMD
+01B1 22              304                RET
+01B2 7494            305     LCD_LINE3: MOV A, #94H        ; Start address for Line 3 on 2004 LCD
+01B4 316F            306                ACALL LCD_CMD
+01B6 22              307                RET
+01B7 74D4            308     LCD_LINE4: MOV A, #0D4H       ; Start address for Line 4 on 2004 LCD
+01B9 316F            309                ACALL LCD_CMD
+01BB 22              310                RET
+                     311     
+                     312     ; Routine to print a null-terminated string from DPTR
+01BC E4              313     LCD_STR:   CLR A
+01BD 93              314                MOVC A, @A+DPTR
+01BE 6005            315                JZ EXT_STR         ; If char is 0, exit
+01C0 3174            316                ACALL LCD_DATA_BYTE
+01C2 A3              317                INC DPTR
+01C3 80F7            318                SJMP LCD_STR
+01C5 22              319     EXT_STR:   RET
+                     320     
+                     321     ; Converts 8-bit number in A to 2 ASCII digits and prints
+A51 MACRO ASSEMBLER  MAIN                                                                 12/24/2025 22:28:14 PAGE     6
+
+01C6 75F00A          322     SHOW_NUM:  MOV B, #10
+01C9 84              323                DIV AB             ; A = Tens, B = Ones
+01CA 2430            324                ADD A, #30H        ; Convert Tens to ASCII
+01CC 3174            325                ACALL LCD_DATA_BYTE
+01CE E5F0            326                MOV A, B
+01D0 2430            327                ADD A, #30H        ; Convert Ones to ASCII
+01D2 3174            328                ACALL LCD_DATA_BYTE
+01D4 22              329                RET
+                     330     
+                     331     ; --- Data Strings ---
+01D5 54656D70        332     TXT_TEMP: DB 'Temperature: ', 0
+01D9 65726174                
+01DD 7572653A                
+01E1 2000                    
+01E3 48756D69        333     TXT_HUMI: DB 'Humidity: ', 0
+01E7 64697479                
+01EB 3A2000                  
+                     334     END
+A51 MACRO ASSEMBLER  MAIN                                                                 12/24/2025 22:28:14 PAGE     7
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+B. . . . . . . . .  D ADDR   00F0H   A   
+BL_STATE . . . . .  N NUMB   0032H   A   
+B_LP . . . . . . .  C ADDR   00EAH   A   
+D100_LP. . . . . .  C ADDR   010DH   A   
+D25_1. . . . . . .  C ADDR   00FCH   A   
+D25_2. . . . . . .  C ADDR   00FEH   A   
+D2S_LP . . . . . .  C ADDR   0105H   A   
+D5_1 . . . . . . .  C ADDR   0115H   A   
+D5_2 . . . . . . .  C ADDR   0117H   A   
+DELAY_100MS. . . .  C ADDR   010BH   A   
+DELAY_25MS . . . .  C ADDR   00FAH   A   
+DELAY_2S . . . . .  C ADDR   0103H   A   
+DELAY_5MS. . . . .  C ADDR   0113H   A   
+DHT_IO . . . . . .  B ADDR   00A0H.0 A   
+EXT_STR. . . . . .  C ADDR   01C5H   A   
+HUM_INT. . . . . .  N NUMB   0030H   A   
+I2C_INIT . . . . .  C ADDR   011CH   A   
+I2C_START. . . . .  C ADDR   0121H   A   
+I2C_STOP . . . . .  C ADDR   012CH   A   
+I2C_WRITE. . . . .  C ADDR   0134H   A   
+LCD_ADDR . . . . .  N NUMB   004EH   A   
+LCD_CMD. . . . . .  C ADDR   016FH   A   
+LCD_DATA_BYTE. . .  C ADDR   0174H   A   
+LCD_INIT . . . . .  C ADDR   0179H   A   
+LCD_LINE1. . . . .  C ADDR   01A8H   A   
+LCD_LINE2. . . . .  C ADDR   01ADH   A   
+LCD_LINE3. . . . .  C ADDR   01B2H   A   
+LCD_LINE4. . . . .  C ADDR   01B7H   A   
+LCD_SEND_BYTE. . .  C ADDR   0169H   A   
+LCD_STR. . . . . .  C ADDR   01BCH   A   
+LOOP . . . . . . .  C ADDR   0051H   A   
+MAIN . . . . . . .  C ADDR   0030H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+PREP . . . . . . .  C ADDR   00CAH   A   
+RD_BYTE. . . . . .  C ADDR   00E8H   A   
+READ_DHT_SAFE. . .  C ADDR   00B1H   A   
+SCL. . . . . . . .  B ADDR   00A0H.2 A   
+SDA. . . . . . . .  B ADDR   00A0H.1 A   
+SEND_NIBBLE. . . .  C ADDR   0154H   A   
+SEND_PACKET. . . .  C ADDR   0148H   A   
+SENSOR_ERR . . . .  C ADDR   0087H   A   
+SHOW_NUM . . . . .  C ADDR   01C6H   A   
+SP . . . . . . . .  D ADDR   0081H   A   
+START_R. . . . . .  C ADDR   00D3H   A   
+TMP_INT. . . . . .  N NUMB   0031H   A   
+TXT_HUMI . . . . .  C ADDR   01E3H   A   
+TXT_TEMP . . . . .  C ADDR   01D5H   A   
+WAIT_NEXT. . . . .  C ADDR   00ABH   A   
+W_B. . . . . . . .  C ADDR   00CCH   A   
+W_BIT. . . . . . .  C ADDR   0136H   A   
+W_H. . . . . . . .  C ADDR   00C3H   A   
+W_L. . . . . . . .  C ADDR   00BAH   A   
+W_OK . . . . . . .  C ADDR   00C1H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)
