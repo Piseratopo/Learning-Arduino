@@ -1,0 +1,8 @@
+ORG 0000H
+
+START:
+   LJMP MAIN
+
+MAIN:
+	
+END
