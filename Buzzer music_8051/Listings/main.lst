@@ -1,0 +1,229 @@
+A51 MACRO ASSEMBLER  MAIN                                                                 01/15/2026 16:15:24 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.2.7.0
+OBJECT MODULE PLACED IN .\Objects\main.obj
+ASSEMBLER INVOKED BY: C:\Keil_v5\C51\BIN\A51.EXE main.a51 SET(SMALL) DEBUG PRINT(.\Listings\main.lst) OBJECT(.\Objects\m
+                      ain.obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+  REG                  1     RELOAD_H EQU R4
+  REG                  2     RELOAD_L EQU R5
+  0000                 3     DONEFLAG EQU 00H
+  REG                  4     COUNT_REGISTER EQU R7
+                       5     
+                       6     ; ------------------------
+                       7     ; Macros for playing sounds
+                       8     ; ------------------------
+                       9     
+                      10     PLAY_100HZ MACRO REPEAT_COUNT
+                      11             MOV A, REPEAT_COUNT
+                      12             MOV R6, #1
+                      13             MOV COUNT_REGISTER, REPEAT_COUNT
+                      14             MOV RELOAD_H, #0EEH
+                      15             MOV RELOAD_L, #00H
+                      16             ACALL RUN_FREQ
+                      17     ENDM
+                      18     
+                      19     PLAY_200HZ MACRO REPEAT_COUNT
+                      20             MOV A, REPEAT_COUNT
+                      21             MOV R6, #2
+                      22             MOV COUNT_REGISTER, REPEAT_COUNT
+                      23             MOV RELOAD_H, #0F7H
+                      24             MOV RELOAD_L, #00H
+                      25             ACALL RUN_FREQ
+                      26     ENDM
+                      27     
+                      28     PLAY_300HZ MACRO REPEAT_COUNT
+                      29             MOV A, REPEAT_COUNT
+                      30             MOV R6, #3
+                      31             MOV COUNT_REGISTER, REPEAT_COUNT
+                      32             MOV RELOAD_H, #0FAH
+                      33             MOV RELOAD_L, #000H
+                      34             ACALL RUN_FREQ
+                      35     ENDM
+                      36     
+                      37     PLAY_400HZ MACRO REPEAT_COUNT
+                      38             MOV A, REPEAT_COUNT
+                      39         MOV R6, #4
+                      40         MOV COUNT_REGISTER, REPEAT_COUNT
+                      41         MOV RELOAD_H, #0FBH
+                      42         MOV RELOAD_L, #080H
+                      43         ACALL RUN_FREQ
+                      44     ENDM
+                      45     
+                      46     PLAY_500HZ MACRO REPEAT_COUNT
+                      47             MOV A, REPEAT_COUNT
+                      48         MOV R6, #5
+                      49         MOV COUNT_REGISTER, REPEAT_COUNT
+                      50         MOV RELOAD_H, #0FCH
+                      51         MOV RELOAD_L, #066H
+                      52         ACALL RUN_FREQ
+                      53     ENDM
+                      54     
+                      55     PLAY_600HZ MACRO REPEAT_COUNT
+                      56             MOV A, REPEAT_COUNT
+                      57         MOV R6, #6
+A51 MACRO ASSEMBLER  MAIN                                                                 01/15/2026 16:15:24 PAGE     2
+
+                      58         MOV COUNT_REGISTER, REPEAT_COUNT
+                      59         MOV RELOAD_H, #0FDH
+                      60         MOV RELOAD_L, #000H
+                      61         ACALL RUN_FREQ
+                      62     ENDM
+                      63     
+                      64     PLAY_700HZ MACRO REPEAT_COUNT
+                      65             MOV A, REPEAT_COUNT
+                      66         MOV R6, #7
+                      67         MOV COUNT_REGISTER, REPEAT_COUNT
+                      68         MOV RELOAD_H, #0FDH
+                      69         MOV RELOAD_L, #06EH
+                      70         ACALL RUN_FREQ
+                      71     ENDM
+                      72     
+                      73     PLAY_800HZ MACRO REPEAT_COUNT
+                      74             MOV A, REPEAT_COUNT
+                      75         MOV R6, #8
+                      76         MOV COUNT_REGISTER, REPEAT_COUNT
+                      77         MOV RELOAD_H, #0FDH
+                      78         MOV RELOAD_L, #0C0H
+                      79         ACALL RUN_FREQ
+                      80     ENDM
+                      81     
+                      82     PLAY_900HZ MACRO REPEAT_COUNT
+                      83             MOV A, REPEAT_COUNT
+                      84         MOV R6, #9
+                      85         MOV COUNT_REGISTER, REPEAT_COUNT
+                      86         MOV RELOAD_H, #0FEH
+                      87         MOV RELOAD_L, #000H
+                      88         ACALL RUN_FREQ
+                      89     ENDM
+                      90     
+                      91     PLAY_1000HZ MACRO REPEAT_COUNT
+                      92             MOV A, REPEAT_COUNT
+                      93         MOV R6, #10
+                      94         MOV COUNT_REGISTER, REPEAT_COUNT
+                      95         MOV RELOAD_H, #0FEH
+                      96         MOV RELOAD_L, #033H
+                      97         ACALL RUN_FREQ
+                      98     ENDM
+                      99     
+                     100     PLAY_1100HZ MACRO REPEAT_COUNT
+                     101             MOV A, REPEAT_COUNT
+                     102         MOV R6, #11
+                     103         MOV COUNT_REGISTER, REPEAT_COUNT
+                     104         MOV RELOAD_H, #0FEH
+                     105         MOV RELOAD_L, #05DH
+                     106         ACALL RUN_FREQ
+                     107     ENDM
+                     108     
+                     109     PLAY_1200HZ MACRO REPEAT_COUNT
+                     110             MOV A, REPEAT_COUNT
+                     111         MOV R6, #12
+                     112         MOV COUNT_REGISTER, REPEAT_COUNT
+                     113         MOV RELOAD_H, #0FEH
+                     114         MOV RELOAD_L, #080H
+                     115         ACALL RUN_FREQ
+                     116     ENDM
+                     117     
+                     118     
+0000                 119     ORG 0000H
+0000 020050          120     LJMP MAIN
+                     121     
+000B                 122     ORG 000BH
+000B 0200FA          123     LJMP TO_ISR
+A51 MACRO ASSEMBLER  MAIN                                                                 01/15/2026 16:15:24 PAGE     3
+
+                     124     
+0050                 125     ORG 0050H
+0050                 126     MAIN:
+0050 758901          127             MOV TMOD, #01H          ; Timer0 mode 1
+0053 75A882          128             MOV IE, #82H            ; Enable Timer0 interrupt, EA=1
+0056 75A000          129             MOV P2, #00H            ; Clear port
+                     130             
+0059                 131     PLAY:
+                     132             PLAY_100HZ #50
+                     139             PLAY_200HZ #50
+                     146             PLAY_300HZ #50
+                     153             PLAY_400HZ #50
+                     160             PLAY_500HZ #50
+                     167             PLAY_600HZ #50
+                     174             PLAY_700HZ #50
+                     181             PLAY_800HZ #50
+                     188             PLAY_900HZ #50
+                     195             PLAY_1000HZ #50
+                     202             PLAY_1100HZ #50
+                     209             PLAY_1200HZ #50
+                     216             
+00E9 75A800          217             MOV IE, #00H
+                     218             
+00EC 80FE            219             SJMP $
+                     220             ;LJMP PLAY
+                     221             
+                     222     
+                     223     ; ------------------------
+                     224     ; Subroutine: RUN_FREQ
+                     225     ; Wait until DONEFLAG is set
+                     226     ; ------------------------
+00EE                 227     RUN_FREQ:
+00EE C200            228             CLR DONEFLAG
+00F0 8C8C            229             MOV TH0, RELOAD_H
+00F2 8D8A            230             MOV TL0, RELOAD_L
+00F4 D28C            231             SETB TR0
+00F6                 232     WAIT_DONE:
+00F6 3000FD          233             JNB DONEFLAG, WAIT_DONE
+00F9 22              234             RET
+                     235     
+                     236     ; ------------------------
+                     237     ; Subroutine: TO_ISR
+                     238     ; Interupt Sequence
+                     239     ; ------------------------
+00FA                 240     TO_ISR:
+                     241             ;CLR TR0
+                     242             ;CLR TF0
+00FA B2A5            243             CPL P2.5                        ; Toggle buzzer pin
+00FC 8C8C            244             MOV TH0, RELOAD_H
+00FE 8D8A            245             MOV TL0, RELOAD_L
+0100 DF05            246             DJNZ COUNT_REGISTER, CONTINUE
+0102 DE02            247             DJNZ R6, R7_RESET
+0104 D200            248             SETB DONEFLAG
+0106                 249     R7_RESET:
+0106 FF              250             MOV COUNT_REGISTER, A
+0107                 251     CONTINUE:
+                     252             ;SETB TR0
+0107 32              253             RETI
+                     254     
+                     255             
+                     256     END
+A51 MACRO ASSEMBLER  MAIN                                                                 01/15/2026 16:15:24 PAGE     4
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+CONTINUE . . . . .  C ADDR   0107H   A   
+COUNT_REGISTER . .    REG    R7          
+DONEFLAG . . . . .  N NUMB   0000H   A   
+IE . . . . . . . .  D ADDR   00A8H   A   
+MAIN . . . . . . .  C ADDR   0050H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+PLAY . . . . . . .  C ADDR   0059H   A   
+R7_RESET . . . . .  C ADDR   0106H   A   
+RELOAD_H . . . . .    REG    R4          
+RELOAD_L . . . . .    REG    R5          
+RUN_FREQ . . . . .  C ADDR   00EEH   A   
+TH0. . . . . . . .  D ADDR   008CH   A   
+TL0. . . . . . . .  D ADDR   008AH   A   
+TMOD . . . . . . .  D ADDR   0089H   A   
+TO_ISR . . . . . .  C ADDR   00FAH   A   
+TR0. . . . . . . .  B ADDR   0088H.4 A   
+WAIT_DONE. . . . .  C ADDR   00F6H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

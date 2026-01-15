@@ -1,0 +1,3 @@
+".\Objects\main.obj" 
+TO ".\Objects\matrix4x4" 
+PRINT(".\Listings\matrix4x4.m51") RAMSIZE(256) 

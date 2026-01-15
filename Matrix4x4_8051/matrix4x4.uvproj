@@ -10,11 +10,11 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x0</ToolsetNumber>
       <ToolsetName>MCS-51</ToolsetName>
-      <uAC6>8</uAC6>
+      <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>AT89S52</Device>
-          <Vendor>Atmel</Vendor>
+          <Vendor>Microchip</Vendor>
           <Cpu>IRAM(0-0xFF) IROM(0-0x1FFF) CLOCK(33000000) MODP2</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile>"LIB\STARTUP.A51" ("Standard 8051 Startup Code")</StartupFile>
@@ -45,14 +45,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\</OutputDirectory>
-          <OutputName>simpleBuzzer</OutputName>
+          <OutputDirectory>.\Objects\</OutputDirectory>
+          <OutputName>matrix4x4</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath>.\</ListingPath>
+          <ListingPath>.\Listings\</ListingPath>
           <HexFormatSelection>0</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
